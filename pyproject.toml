@@ -1,0 +1,16 @@
+[project]
+name = "bayespcg"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "numpyro[cuda]>=0.18.0",
+    "pyxel>=2.3.18",
+]
+
+[tool.uv]
+dev-dependencies = [
+    "ipykernel>=6.29.5",
+    "ruff>=0.11.12",
+]
