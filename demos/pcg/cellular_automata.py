@@ -3,9 +3,10 @@ import numpy as np
 
 
 class Cave:
-    def __init__(self, size: int, fill_prob=0.6) -> None:
+    def __init__(self, size: int, fill_prob=0.6, gen_steps=5) -> None:
         self.size = size
         self.fill_prob = fill_prob
+        self.gen_steps = gen_steps
         self._grid = self._random_grid()
         self.generate()
 
@@ -29,7 +30,7 @@ class Cave:
         return neighbors
 
     def generate(self) -> None:
-        for _ in range(4):
+        for _ in range(self.gen_steps):
             neighbors_1 = self.get_neighbors(1)
             neighbors_2 = self.get_neighbors(2)
 
