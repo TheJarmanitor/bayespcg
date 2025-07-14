@@ -120,13 +120,13 @@ class App:
             self._regen()
 
     def draw(self):
-        pyxel.cls(1)
+        pyxel.cls(0)
         pyxel.rectb(
             self.dungeon.root.x,
             self.dungeon.root.y,
             self.dungeon.root.width,
             self.dungeon.root.height,
-            9,
+            7,
         )
         stack = [self.dungeon.root]
         while stack:
@@ -134,17 +134,17 @@ class App:
             if node.left and node.right:
                 if node.left.width < node.width:
                     x = node.x + node.left.width
-                    pyxel.line(x, node.y, x, node.y + node.height, 9)
+                    pyxel.line(x, node.y, x, node.y + node.height, 7)
                 else:
                     y = node.y + node.left.height
-                    pyxel.line(node.x, y, node.x + node.width, y, 9)
+                    pyxel.line(node.x, y, node.x + node.width, y, 7)
 
                 # recurse
                 stack.append(node.left)
                 stack.append(node.right)
 
         for leaf in self.dungeon.leaves:
-            pyxel.rect(*leaf.room, 9)
+            pyxel.rect(*leaf.room, 7)
 
 
 if __name__ == "__main__":
