@@ -28,6 +28,7 @@ class Dungeon:
         self.min_area = min_area
         self.root = Node(0, 0, width, height)
         self.leaves = [self.root]
+        self.corridors = []
 
     def reset(self):
         self.root = Node(0, 0, width=self.width, height=self.height)
@@ -74,6 +75,25 @@ class Dungeon:
         self.leaves.extend([left, right])
         return True
 
+    def _room_center(self, node):
+        if node.is_leaf():
+            rx, ry, rw, rh = node.room
+            return rx + rw // 2, ry + rh // 2
+        if node.left and any(n.room for n in self._iter_leaves(node.left)):
+            return self._room_center(node.left)
+        return node._room_center(node.right)
+
+    def _iter_leaves(self, start):
+        stack = [start]
+
+        while stack:
+            n = stack.pop()
+            if n.is_leaf():
+                yield n
+            else:
+                stack.append(n.left)
+                stack.append(n.right)
+
     def carve_rooms(self, min_room_size=8, room_margin=2):
         for leaf in self.leaves:
             max_width = leaf.width - (2 * room_margin)
@@ -94,6 +114,23 @@ class Dungeon:
 
             leaf.room = (r_x, r_y, r_width, r_height)
 
+    def carve_corridors(self):
+        self.corridors.clear()
+
+        def _connect(node):
+            if not node.left or not node.right:
+                return
+            x1, y1 = self._room_center(node.left)
+            x2, y2 = self._room_center(node.right)
+
+            self.corridors.append((x1, y1, x2, y1))
+            self.corridors.append((x2, y1, x2, y2))
+
+            _connect(node.left)
+            _connect(node.right)
+
+        _connect(self.root)
+
     def generate(self, n_iter=5):
         for _ in range(n_iter):
             leaf = self._choose_leaf()
@@ -113,7 +150,8 @@ class App:
     def _regen(self) -> None:
         self.dungeon.reset()
         self.dungeon.generate(n_iter=8)
-        self.dungeon.carve_rooms()
+        self.dungeon.carve_rooms(min_room_size=12, room_margin=2)
+        self.dungeon.carve_corridors()
 
     def update(self):
         if pyxel.btnp(pyxel.KEY_R):
@@ -132,12 +170,12 @@ class App:
         while stack:
             node = stack.pop()
             if node.left and node.right:
-                if node.left.width < node.width:
-                    x = node.x + node.left.width
-                    pyxel.line(x, node.y, x, node.y + node.height, 9)
-                else:
-                    y = node.y + node.left.height
-                    pyxel.line(node.x, y, node.x + node.width, y, 9)
+                # if node.left.width < node.width:
+                #     x = node.x + node.left.width
+                #     pyxel.line(x, node.y, x, node.y + node.height, 9)
+                # else:
+                #     y = node.y + node.left.height
+                #     pyxel.line(node.x, y, node.x + node.width, y, 9)
 
                 # recurse
                 stack.append(node.left)
@@ -145,6 +183,9 @@ class App:
 
         for leaf in self.dungeon.leaves:
             pyxel.rect(*leaf.room, 9)
+
+        for x1, y1, x2, y2 in self.dungeon.corridors:
+            pyxel.line(x1, y1, x2, y2, 9)
 
 
 if __name__ == "__main__":
